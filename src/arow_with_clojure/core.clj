@@ -1,6 +1,8 @@
 (ns arow-with-clojure.core)
 
 (def DEFAULT_REGULARIZATION 1.0)
+(def DEFAULT_MEAN           0.0)
+(def DEFAULT_COV            1.0)
 
 (defrecord Model [r mean cov])
 
@@ -9,23 +11,28 @@
     (throw (IllegalArgumentException. "r must be positive")))
   (Model. r {} {}))
 
+(defn- get-mean [mean feature]
+  (get mean feature DEFAULT_MEAN))
+
+(defn- get-cov  [cov feature]
+  (get cov feature DEFAULT_COV))
+
 
 (defn classify [model data]
   (let [mean (:mean model)]
-    (reduce-kv (fn [margin f w] (+ margin (* w (get mean f 0.0))))
+    (reduce-kv (fn [margin f w] (+ margin (* w (get-mean mean f))))
                0.0 data)))
 
 
 (defn- confidence [model data]
   (let [cov (:cov model)]
-    (reduce-kv (fn [confidence f w] (+ confidence (* w w (get cov f 1.0))))
+    (reduce-kv (fn [confidence f w] (+ confidence (* w w (get-cov cov f))))
                0.0 data)))
 
 (defn- update-mean [model label data alpha]
   (let [cov (:cov model)]
     (reduce-kv (fn [m f w]
-                 ;(update-in m [f] (fnil + 0) (* alpha (get cov f 1.0) w)))
-                 (assoc m f (+ (get m f 0.0) (* label alpha (get cov f 1.0) w))))
+                 (assoc m f (+ (get-mean m f) (* label alpha (get-cov cov f) w))))
                (:mean model) data)))
 
 (defn- update-cov [model data beta]
