@@ -17,12 +17,15 @@
 (defn- get-cov  [cov feature]
   (get cov feature DEFAULT_COV))
 
-
-(defn classify [model data]
+(defn- margin [model data]
   (let [mean (:mean model)]
     (reduce-kv (fn [margin f w] (+ margin (* w (get-mean mean f))))
                0.0 data)))
 
+(defn predict [model data]
+  (if (>= (margin model data) 0)
+    1.0
+    -1.0))
 
 (defn- confidence [model data]
   (let [cov (:cov model)]
@@ -44,7 +47,7 @@
                (:cov model) data)))
 
 (defn update [model label data]
-  (let [margin (classify model data)]
+  (let [margin (margin model data)]
     (if (<  (* label margin) 1.0)
       (let [confidence (confidence model data)
             beta       (/ 1.0 (+ confidence (:r model)))

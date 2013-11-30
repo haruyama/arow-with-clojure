@@ -19,9 +19,9 @@
 (deftest arow
          (let [model (train (arow-with-clojure.core/initialize-model) train-data)]
            (doseq [entry train-data]
-             (is (= true (>  (* (first entry) (arow-with-clojure.core/classify model (second entry))) 0))))))
+             (is (= true (>  (* (first entry) (arow-with-clojure.core/predict model (second entry))) 0))))))
 
 (deftest arow-2
          (let [model (train (arow-with-clojure.core/initialize-model :r 0.1) train-data)]
            (doseq [entry train-data]
-             (is (= true (>  (* (first entry) (arow-with-clojure.core/classify model (second entry))) 0))))))
+             (is (= true (>  (* (first entry) (arow-with-clojure.core/predict model (second entry))) 0))))))
